@@ -1,4 +1,4 @@
-from math import cos, sin
+from math import pi, cos, sin
 import numpy as np
 import pygame
 
@@ -9,6 +9,8 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 BG_COLOR = BLACK
+
+ROTATE_STEP = 0.02
 
 VERTICES = (
     (-10, -10, -10),
@@ -36,7 +38,8 @@ def init_graph():
     global screen, display, clock, font, screen_size, screen_center
     pygame.init()
     # screen = pygame.display.set_mode((1280, 769))
-    screen = pygame.display.set_mode((1280, 769), vsync=True)
+    # screen = pygame.display.set_mode((1280, 769), vsync=True)
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=True)
     # screen = pygame.display.set_mode((0, 0), pygame.DOUBLEBUF | pygame.FULLSCREEN, vsync=True)
     screen_size = pygame.display.get_surface().get_size()
 
@@ -63,7 +66,7 @@ def display_fps():
 def rotate_x(verts, a):
     transform_matrix = np.array([
         [1, 0, 0],
-        [0, cos(a), sin(a)],
+        [0, cos(a), -sin(a)],
         [0, sin(a), cos(a)],
     ])
     return np.transpose(np.dot(transform_matrix, np.transpose(verts)))
@@ -88,15 +91,19 @@ def rotate_z(verts, a):
 
 
 def draw_scene():
-    global angle_y
+    global angle_x, angle_y, angle_z
 
     camera = np.array(CAMERA_POSITION)
     center = np.array(screen_center)
     verts = np.array(VERTICES)
 
+    verts = rotate_x(verts, angle_x)
     verts = rotate_y(verts, angle_y)
+    verts = rotate_z(verts, angle_z)
 
-    angle_y += -.02
+    # angle_x += -.02
+    # angle_y += -.02
+    # angle_z += -.02
 
     verts = np.subtract(verts, camera)
 
@@ -122,7 +129,9 @@ def draw_scene():
 if __name__ == '__main__':
     init_graph()
 
+    angle_x = 0
     angle_y = 0
+    angle_z = 0
 
     loop = 1
     while loop:
@@ -134,6 +143,36 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 loop = 0
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    angle_y -= ROTATE_STEP
+
+        #         if event.key == pygame.K_RIGHT:
+        #             angle_y += ROTATE_STEP
+
+        #         if event.key == pygame.K_UP:
+        #             angle_x -= ROTATE_STEP
+
+        #         if event.key == pygame.K_DOWN:
+        #             angle_x += ROTATE_STEP
+
+        keys = pygame.key.get_pressed()                    
+        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+            angle_y -= ROTATE_STEP
+        elif keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+            angle_y += ROTATE_STEP
+
+        if keys[pygame.K_UP] or keys[pygame.K_w]:
+            angle_x -= ROTATE_STEP
+        elif keys[pygame.K_DOWN] or keys[pygame.K_s]:
+            angle_x += ROTATE_STEP
+
+        if keys[pygame.K_q]:
+            angle_z += ROTATE_STEP
+        elif keys[pygame.K_e]:
+            angle_z -= ROTATE_STEP
+
+
         clock.tick(60)
         pygame.display.flip()
      
