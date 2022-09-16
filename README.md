@@ -4,7 +4,7 @@
 
 ### 1.1. Clone the repository
 ```
-git clone <repository>
+git clone git@github.com:iserk/pygame_3d.git
 cd pygame_3d
 ```
 
