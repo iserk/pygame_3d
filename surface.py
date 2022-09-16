@@ -30,7 +30,7 @@ EDGES = (
     (0, 4), (1, 5), (2, 6), (3, 7),
 )
 
-CAMERA_POSITION = (0, 0, -30)
+CAMERA_POSITION = [0, 0, -30]
 # CAMERA_ORIENTATION = (0, 0, 0)
 
 
@@ -38,8 +38,8 @@ def init_graph():
     global screen, display, clock, font, screen_size, screen_center
     pygame.init()
     # screen = pygame.display.set_mode((1280, 769))
-    # screen = pygame.display.set_mode((1280, 769), vsync=True)
-    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=True)
+    screen = pygame.display.set_mode((1280, 769), vsync=True)
+    # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN, vsync=True)
     # screen = pygame.display.set_mode((0, 0), pygame.DOUBLEBUF | pygame.FULLSCREEN, vsync=True)
     screen_size = pygame.display.get_surface().get_size()
 
@@ -90,6 +90,33 @@ def rotate_z(verts, a):
     return np.transpose(np.dot(transform_matrix, np.transpose(verts)))
 
 
+def init_mesh():
+    global suraface_mesh, VERTICES, EDGES
+
+    VERTICES = []
+    EDGES = []
+
+    cell_size = 1
+
+    cells_x = 50
+    cells_y = 50
+
+    for i in range(cells_x):
+        for j in range(cells_y):
+            x = (i - cells_x / 2) * cell_size
+            y = (j - cells_y / 2) * cell_size
+            # z = sin(x/2) + cos(y/2)
+            z = sin((x ** 2 + y ** 2)/30)
+            VERTICES.append((x, y, z))
+            if j > 0:
+                EDGES.append((j + i * cells_x, (j - 1) + i * cells_x))
+
+    for j in range(cells_y):
+        for i in range(cells_x):
+            if i > 0:
+                EDGES.append((j + i * cells_x, j + (i - 1) * cells_x))
+
+
 def draw_scene():
     global angle_x, angle_y, angle_z
 
@@ -124,10 +151,13 @@ def draw_scene():
     for edge in EDGES:
         pygame.draw.line(screen, GREEN, (*verts2[edge[0]],), (*verts2[edge[1]], ))
 
+    for v in verts2:
+        screen.set_at((int(v[0]), int(v[1])), RED)
 
 
 if __name__ == '__main__':
     init_graph()
+    init_mesh()
 
     angle_x = 0
     angle_y = 0
@@ -171,6 +201,11 @@ if __name__ == '__main__':
             angle_z += ROTATE_STEP
         elif keys[pygame.K_e]:
             angle_z -= ROTATE_STEP
+
+        if keys[pygame.K_r] and CAMERA_POSITION[2] < -5:
+            CAMERA_POSITION[2] += 1
+        elif keys[pygame.K_f]:
+            CAMERA_POSITION[2] -= 1
 
 
         clock.tick(60)
